@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack</title>
+    <link rel="stylesheet" href="/static/blackjack.css">
+</head>
+<body>
+    <h1>Blackjack</h1>
+    <div id="game">
+        <h2>Dealer's Hand</h2>
+        <div class="hand" id="dealer-hand"></div>
+        <h2>Your Hand</h2>
+        <div class="hand" id="player-hand"></div>
+        <button id="hit">Hit</button>
+        <button id="stand">Stand</button>
+        <button id="refresh">Refresh Game</button>
+    </div>
+    <p id="result"></p>
+    
+    <!-- Return to Main Menu button moved outside of #game div -->
+    <div id="bottom-buttons">
+        <button id="main-menu"><a href="/">Return to Main Menu</a></button>
+    </div>
+
+    <script>
+        let sessionData = null;
+
+        async function startGame() {
+            const response = await fetch('/blackjack', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'new_game' })
+            });
+            sessionData = await response.json();
+            updateGameView(sessionData);
+            enableButtons(); // Ensure buttons are enabled after new game
+        }
+
+        async function playAction(action) {
+            const response = await fetch('/blackjack', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action, session: sessionData.session })
+            });
+            sessionData = await response.json();
+            updateGameView(sessionData);
+
+            if (sessionData.result) {
+                document.getElementById('result').textContent = `You ${sessionData.result}!`;
+                disableButtons(); // Disable buttons after game result
+            }
+        }
+
+        async function refreshGame() {
+            const response = await fetch('/refresh_game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            sessionData = await response.json();
+            updateGameView(sessionData);
+            enableButtons(); // Re-enable the buttons after refreshing the game
+        }
+
+        function updateGameView(data) {
+            const dealerHand = data.dealer_hand;
+            const playerHand = data.player_hand;
+
+            const dealerHandDiv = document.getElementById('dealer-hand');
+            dealerHandDiv.innerHTML = '';
+            dealerHand.forEach(card => {
+                const img = document.createElement('img');
+                img.src = `/static/cards/${card.rank}_of_${card.suit}.png`;
+                img.alt = `${card.rank} of ${card.suit}`;
+                img.className = 'card';
+                dealerHandDiv.appendChild(img);
+            });
+
+            const playerHandDiv = document.getElementById('player-hand');
+            playerHandDiv.innerHTML = '';
+            playerHand.forEach(card => {
+                const img = document.createElement('img');
+                img.src = `/static/cards/${card.rank}_of_${card.suit}.png`;
+                img.alt = `${card.rank} of ${card.suit}`;
+                img.className = 'card';
+                playerHandDiv.appendChild(img);
+            });
+
+            document.getElementById('result').textContent = '';
+        }
+
+        function disableButtons() {
+            document.getElementById('hit').disabled = true;
+            document.getElementById('stand').disabled = true;
+        }
+
+        function enableButtons() {
+            document.getElementById('hit').disabled = false;
+            document.getElementById('stand').disabled = false;
+        }
+
+        document.getElementById('hit').addEventListener('click', () => playAction('hit'));
+        document.getElementById('stand').addEventListener('click', () => playAction('stand'));
+        document.getElementById('refresh').addEventListener('click', refreshGame);
+
+        window.onload = startGame;
+    </script>
+</body>
+</html>

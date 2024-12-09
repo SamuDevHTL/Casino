@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slots</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #2c3e50;
+            color: white;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+        #slots-result {
+            font-size: 2rem;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Slots</h1>
+    <button id="spin">Spin</button>
+    <div id="slots-result">🎰 🎰 🎰</div>
+    <p id="result"></p>
+
+    <script>
+        document.getElementById('spin').addEventListener('click', async () => {
+            const response = await fetch('/slots', { method: 'POST' });
+            const data = await response.json();
+            document.getElementById('slots-result').textContent = data.symbols.join(' ');
+            document.getElementById('result').textContent = 
+                `Result: You ${data.result}! Payout: ${data.payout}`;
+        });
+    </script>
+</body>
+</html>
