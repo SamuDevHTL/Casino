@@ -60,6 +60,17 @@ def is_soft_hand(hand):
     return any(card['rank'] == 'ace' for card in hand) and calculate_hand_value(hand) <= 17
 
 
+roulette_numbers = {
+    0: "green",
+    1: "red", 2: "black", 3: "red", 4: "black", 5: "red", 6: "black",
+    7: "red", 8: "black", 9: "red", 10: "black", 11: "black", 12: "red",
+    13: "black", 14: "red", 15: "black", 16: "red", 17: "black", 18: "red",
+    19: "red", 20: "black", 21: "red", 22: "black", 23: "red", 24: "black",
+    25: "red", 26: "black", 27: "red", 28: "black", 29: "black", 30: "red",
+    31: "black", 32: "red", 33: "black", 34: "red", 35: "black", 36: "red"
+}
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -118,23 +129,36 @@ def refresh_game():
     return jsonify({'session': session, 'player_hand': player_hand, 'dealer_hand': dealer_hand})
 
 
-@app.route('/roulette', methods=['GET', 'POST'])
+@app.route("/roulette")
 def roulette():
-    if request.method == 'POST':
-        bet = int(request.form['bet'])
-        chosen_color = request.form['color']
-        winning_color = random.choice(['red', 'black'])
+    return render_template("roulette.html")
 
-        if chosen_color == winning_color:
-            payout = bet * 2
-            result = "win"
-        else:
-            payout = 0
-            result = "lose"
+@app.route("/roulette/spin", methods=["POST"])
+def spin():
+    # Spin the wheel
+    winning_number = random.choice(list(roulette_numbers.keys()))
+    color = roulette_numbers[winning_number]
 
-        return jsonify({'result': result, 'winning_color': winning_color, 'payout': payout})
+    # Process the player's bet
+    bet_type = request.json.get("bet_type")
+    bet_value = request.json.get("bet_value")
 
-    return render_template('roulette.html')
+    result = {
+        "winning_number": winning_number,
+        "color": color,
+        "won": False,
+        "message": "You lost!"
+    }
+
+    # Check if the player won
+    if bet_type == "number" and int(bet_value) == winning_number:
+        result["won"] = True
+        result["message"] = f"You won! The number was {winning_number}."
+    elif bet_type == "color" and bet_value.lower() == color:
+        result["won"] = True
+        result["message"] = f"You won! The color was {color}."
+
+    return jsonify(result)
 
 
 @app.route('/slots', methods=['GET', 'POST'])

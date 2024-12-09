@@ -7,63 +7,199 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             background-color: #2c3e50;
             color: white;
+            text-align: center;
+        }
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 2px solid white;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        #bet-form {
+            margin: 20px auto;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
         }
         button {
-            padding: 10px 20px;
-            background-color: #1abc9c;
+            background-color: #16a085;
             color: white;
             border: none;
             cursor: pointer;
         }
         button:hover {
-            background-color: #16a085;
-        }
-        input {
-            padding: 5px;
-            margin: 10px;
-        }
-        select {
-            padding: 5px;
-            margin: 10px;
+            background-color: #1abc9c;
         }
     </style>
 </head>
 <body>
     <h1>Roulette</h1>
-    <form id="roulette-form">
-        <label for="bet">Enter Bet Amount:</label>
-        <input type="number" id="bet" name="bet" min="1" required>
-        <br>
-        <label for="color">Choose a Color:</label>
-        <select id="color" name="color" required>
-            <option value="red">Red</option>
-            <option value="black">Black</option>
+    <canvas id="roulette-wheel" width="300" height="300"></canvas>
+    <div id="result"></div>
+    <form id="bet-form">
+        <label for="bet-type">Bet Type:</label>
+        <select id="bet-type">
+            <option value="number">Number</option>
+            <option value="color">Color</option>
         </select>
-        <br>
-        <button type="submit">Spin</button>
+        <label for="bet-value">Bet Value:</label>
+        <input type="text" id="bet-value" placeholder="Enter a number or color">
+        <button type="submit">Place Bet</button>
     </form>
-    <p id="result"></p>
+    <a href="/">Return to Main Menu</a>
 
     <script>
-        const form = document.getElementById('roulette-form');
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const bet = document.getElementById('bet').value;
-            const color = document.getElementById('color').value;
+        const wheelCanvas = document.getElementById('roulette-wheel');
+        const ctx = wheelCanvas.getContext('2d');
 
-            const response = await fetch('/roulette', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `bet=${bet}&color=${color}`
+        const segments = [
+            { number: 0, color: "green" },
+            { number: 1, color: "red" }, { number: 2, color: "black" },
+            { number: 3, color: "red" }, { number: 4, color: "black" },
+            { number: 5, color: "red" }, { number: 6, color: "black" },
+            { number: 7, color: "red" }, { number: 8, color: "black" },
+            { number: 9, color: "red" }, { number: 10, color: "black" },
+            { number: 11, color: "black" }, { number: 12, color: "red" },
+            { number: 13, color: "black" }, { number: 14, color: "red" },
+            { number: 15, color: "black" }, { number: 16, color: "red" },
+            { number: 17, color: "black" }, { number: 18, color: "red" },
+            { number: 19, color: "red" }, { number: 20, color: "black" },
+            { number: 21, color: "red" }, { number: 22, color: "black" },
+            { number: 23, color: "red" }, { number: 24, color: "black" },
+            { number: 25, color: "red" }, { number: 26, color: "black" },
+            { number: 27, color: "red" }, { number: 28, color: "black" },
+            { number: 29, color: "black" }, { number: 30, color: "red" },
+            { number: 31, color: "black" }, { number: 32, color: "red" },
+            { number: 33, color: "black" }, { number: 34, color: "red" },
+            { number: 35, color: "black" }, { number: 36, color: "red" }
+        ];
+        const ballRadius = 5;
+        let ballAngle = 0;
+
+        function drawWheel() {
+            const centerX = wheelCanvas.width / 2;
+            const centerY = wheelCanvas.height / 2;
+            const radius = 120;
+            const angleStep = (2 * Math.PI) / segments.length;
+
+            ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+            segments.forEach((segment, i) => {
+                const startAngle = i * angleStep;
+                const endAngle = startAngle + angleStep;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.fillStyle = segment.color;
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + angleStep / 2);
+                ctx.fillStyle = "white";
+                ctx.font = "12px Arial";
+                ctx.fillText(segment.number, radius - 30, 0);
+                ctx.restore();
             });
+        }
 
+        function drawBall(angle) {
+            const centerX = wheelCanvas.width / 2;
+            const centerY = wheelCanvas.height / 2;
+            const radius = 100;
+
+            const ballX = centerX + radius * Math.cos(angle);
+            const ballY = centerY + radius * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function spinWheel(resultIndex) {
+            const totalSteps = 300; // Total steps for spinning
+            const initialSpeed = 0.2; // Initial speed of the ball
+            const deceleration = initialSpeed / totalSteps; // Slow down per step
+
+            let currentStep = 0;
+            let currentSpeed = initialSpeed; // Start with the initial speed
+            let currentAngle = ballAngle;
+
+            const randomOffset = Math.random() * (2 * Math.PI / segments.length);
+            const targetAngle = (2 * Math.PI) * (resultIndex / segments.length) + randomOffset;
+
+            function step() {
+                if (currentSpeed > 0) {
+                    currentAngle += currentSpeed;
+                    currentSpeed -= deceleration;
+                    drawWheel();
+                    drawBall(currentAngle);
+                    currentStep++;
+
+                    requestAnimationFrame(step);
+                } else {
+                    // Easing effect for the final position
+                    const easingSteps = 30; // Number of steps for easing
+                    let easingStep = 0;
+
+                    function easing() {
+                        if (easingStep < easingSteps) {
+                            const easingFactor = easingStep / easingSteps;
+                            // Calculate the eased angle without speeding up
+                            const easedAngle = ballAngle + (targetAngle - ballAngle) * easingFactor;
+                            drawWheel();
+                            drawBall(easedAngle);
+                            easingStep++;
+                            requestAnimationFrame(easing);
+                        } else {
+                            ballAngle = targetAngle; // Set final position
+                            drawWheel();
+                            drawBall(ballAngle);
+                        }
+                    }
+
+                    requestAnimationFrame(easing);
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        document.getElementById("bet-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const betType = document.getElementById("bet-type").value;
+            const betValue = document.getElementById("bet-value").value;
+
+            const response = await fetch("/roulette/spin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ bet_type: betType, bet_value: betValue })
+            });
             const data = await response.json();
-            document.getElementById('result').textContent = 
-                `Result: You ${data.result}! Winning Color: ${data.winning_color}, Payout: ${data.payout}`;
+
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = `<p>${data.message}</p>`;
+            if (data.won) {
+                resultDiv.innerHTML += `<p>Winning Number: ${data.winning_number} (${data.color})</p>`;
+            }
+
+            const resultIndex = segments.findIndex(s => s.number === data.winning_number);
+            spinWheel(resultIndex);
         });
+
+        drawWheel();
+        drawBall(ballAngle);
     </script>
 </body>
 </html>

@@ -1,0 +1,99 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #004d00; /* Dark green background */
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Header Styles */
+h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+/* Result Display */
+#result {
+    margin-top: 20px;
+    font-size: 18px;
+}
+
+/* Bet Form Styles */
+#bet-form {
+    margin: 20px auto;
+    background-color: #003300; /* Darker green for form */
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block; /* Center the form */
+}
+
+/* Input and Button Styles */
+input, select, button {
+    padding: 10px;
+    margin: 5px;
+    font-size: 16px;
+    border-radius: 5px; /* Rounded corners */
+    border: 1px solid #fff; /* White border for inputs */
+}
+
+/* Button Styles */
+button {
+    background-color: #ffcc00; /* Gold color for buttons */
+    color: black;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+button:hover {
+    background-color: #ffd700; /* Lighter gold on hover */
+}
+
+/* Slot Container Styles */
+.slot-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+/* Slot Styles */
+.slot {
+    width: 80px;
+    height: 120px;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    background-color: #006600; /* Slot background */
+    margin: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+/* Return Button Styles */
+#return-button {
+    background-color: #ffcc00; /* Gold color for the return button */
+    color: black;
+    border: none;
+    cursor: pointer;
+    padding: 10px 20px; /* Padding for the button */
+    font-size: 16px; /* Font size */
+    border-radius: 5px; /* Rounded corners */
+    margin-top: 20px; /* Margin above the button */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+#return-button:hover {
+    background-color: #ffd700; /* Lighter gold on hover */
+}
+
+/* Link Styles (if you want to keep the old link) */
+a {
+    color: white;
+    text-decoration: underline;
+    margin-top: 20px;
+    display: inline-block; /* Center the link */
+}

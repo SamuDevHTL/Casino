@@ -57,7 +57,7 @@ h2 {
 button {
     padding: 12px 30px;
     font-size: 18px;
-    background-color: #16a085;
+    background-color: #414141;
     color: white;
     border: none;
     border-radius: 5px;
@@ -67,7 +67,7 @@ button {
 }
 
 button:hover {
-    background-color: #1abc9c;
+    background-color: #4b4b4b;
     transform: scale(1.05);
 }
 
@@ -96,7 +96,7 @@ button:disabled {
 }
 
 #main-menu {
-    background-color: #2980b9;
+    background-color: #414141;
 }
 
 #main-menu a {
@@ -109,10 +109,10 @@ button:disabled {
 }
 
 #main-menu a:hover {
-    background-color: #3498db;
+    background-color: #414141;
     transform: scale(1.05);
 }
 
 #main-menu a:active {
-    background-color: #1abc9c;
+    background-color: #414141;
 }

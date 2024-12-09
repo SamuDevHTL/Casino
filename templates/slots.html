@@ -3,43 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slots</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #2c3e50;
-            color: white;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #c0392b;
-        }
-        #slots-result {
-            font-size: 2rem;
-            margin: 20px 0;
-        }
-    </style>
+    <title>Slots Game</title>
+    <link rel="stylesheet" href="/static/slots.css"> <!-- Link to the CSS file -->
 </head>
 <body>
-    <h1>Slots</h1>
-    <button id="spin">Spin</button>
-    <div id="slots-result">🎰 🎰 🎰</div>
-    <p id="result"></p>
+    <h1>Slots Game</h1>
+    <div class="slot-container">
+        <div class="slot">🍒</div>
+        <div class="slot">🍋</div>
+        <div class="slot">🍊</div>
+    </div>
+    <div id="result"></div>
+    <form id="bet-form">
+        <label for="bet-amount">Bet Amount:</label>
+        <input type="number" id="bet-amount" placeholder="Enter your bet" min="1" required>
+        <button type="submit">Spin</button>
+    </form>
+    <button id="return-button">Return to Main Menu</button> <!-- New Return Button -->
 
     <script>
-        document.getElementById('spin').addEventListener('click', async () => {
-            const response = await fetch('/slots', { method: 'POST' });
-            const data = await response.json();
-            document.getElementById('slots-result').textContent = data.symbols.join(' ');
-            document.getElementById('result').textContent = 
-                `Result: You ${data.result}! Payout: ${data.payout}`;
+        // JavaScript code for slots functionality
+        document.getElementById('bet-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const betAmount = parseInt(document.getElementById('bet-amount').value);
+            const slots = ['🍒', '🍋', '🍊', '🍉', '🍇', '🍊'];
+            const results = [];
+            const slotElements = document.querySelectorAll('.slot');
+
+            // Add running effect to each slot
+            let spinDuration = 2000; // Total duration for the running effect
+            let intervalTime = 100; // Time between each item change
+            let iterations = spinDuration / intervalTime; // Number of iterations
+            let currentIteration = 0;
+
+            const interval = setInterval(() => {
+                slotElements.forEach(slot => {
+                    const randomIndex = Math.floor(Math.random() * slots.length);
+                    slot.innerText = slots[randomIndex]; // Change to a random item
+                });
+                currentIteration++;
+
+                if (currentIteration >= iterations) {
+                    clearInterval(interval); // Stop the interval
+                    // Set final results after running effect
+                    for (let i = 0; i < 3; i++) {
+                        const randomIndex = Math.floor(Math.random() * slots.length);
+                        results.push(slots[randomIndex]);
+                    }
+                    // Display final results
+                    document.querySelector('.slot-container').innerHTML = results.map(slot => `<div class="slot">${slot}</div>`).join('');
+                    document.getElementById('result').innerText = `You spun: ${results.join(' ')}`;
+
+                    // Calculate winnings
+                    const winnings = calculateWinnings(results, betAmount);
+                    if (winnings > 0) {
+                        document.getElementById('result').innerText += `\nYou win: $${winnings}!`;
+                    }
+                }
+            }, intervalTime); // Change items at the specified interval
+        });
+
+        function calculateWinnings(results, betAmount) {
+            // Simple winning logic: 3 of a kind wins 10x the bet, 2 of a kind wins 2x the bet
+            const counts = {};
+            results.forEach(slot => {
+                counts[slot] = (counts[slot] || 0) + 1;
+            });
+
+            if (Object.values(counts).includes(3)) {
+                return betAmount * 10; // 3 of a kind
+            } else if (Object.values(counts).includes(2)) {
+                return betAmount * 2; // 2 of a kind
+            }
+            return 0; // No win
+        }
+
+        // Add functionality to the return button
+        document.getElementById('return-button').addEventListener('click', function() {
+            window.location.href = '/'; // Change this to your main menu URL
         });
     </script>
 </body>
