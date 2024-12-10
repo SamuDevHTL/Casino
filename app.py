@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import sqlite3
 import random
 
@@ -24,6 +24,22 @@ def init_db():
                             amount INTEGER,
                             FOREIGN KEY(user_id) REFERENCES users(id)
                         )''')
+        
+def register_user(username, password):
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False  # Username already exists
+
+def authenticate_user(username, password):
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        return cursor.fetchone()  # Returns user row if found, else None
 
 
 def create_deck():
@@ -75,6 +91,33 @@ roulette_numbers = {
 def index():
     return render_template('index.html')
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = authenticate_user(username, password)
+        
+        if user:
+            session['user_id'] = user[0]  # Store user ID in session
+            session['username'] = user[1]  # Store username in session
+            return redirect(url_for('index'))  # Redirect to home page after login
+        else:
+            return "Invalid username or password", 401  # Handle invalid login
+
+    return render_template('login.html')  # Render login form
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if register_user(username, password):
+            return redirect(url_for('login'))  # Redirect to login after successful registration
+        else:
+            return "Username already exists", 400  # Handle username already taken
+
+    return render_template('register.html')  # Render registration form
 
 @app.route('/blackjack', methods=['GET', 'POST'])
 def blackjack():
